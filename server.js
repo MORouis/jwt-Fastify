@@ -5,8 +5,8 @@ fastify.register(jwt, {
     secret: "supersecret"
 })
 
-//authentication decorator
-fastify.decorate("authenticate", async function (req, reply) {
+//authentication
+fastify.decorate("authentication", async (req, reply) => {
     try {
         await req.jwtVerify()
     } catch (error) {
@@ -14,4 +14,20 @@ fastify.decorate("authenticate", async function (req, reply) {
     }
 })
 
-module.exports = fastify
+//authorization
+const checkRole = (allowedRoles) => (async (req, reply) => {
+    try {
+        const user= req.user
+        console.log(user)
+        if (!user) {
+            throw new Error('Invalid username')
+        }
+        if(!allowedRoles.includes(user.role)){
+            throw new Error('Unauthorized')
+        }
+    } catch (error) {
+        reply.status(401).send({ error: 'Unauthorized' })
+    }
+})
+
+module.exports = {fastify, checkRole}

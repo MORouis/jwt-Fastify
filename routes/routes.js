@@ -1,31 +1,37 @@
-const fastify = require('../server')
+const {fastify, checkRole} = require('../server')
 
-const { generateToken, validateToken, showMessage } = require("../controllers/controllers")
+const { AddUser, ValidateUser, DeveloperAuthorization, DeleteUser } = require("../controllers/controllers")
 
-const generateTokenOpts = {
-    method: "GET",
-    url: "/generateToken/:id",
-    handler: generateToken
+const addUserOpts = {
+    method: "POST",
+    url: "/add-user",
+    handler: AddUser
 }
 
-const validateTokenOpts = {
-    method: "GET",
-    url: "/validateToken",
-    preHandler: fastify.authenticate,
-    handler: validateToken
+const validateUserOpts = {
+    method: "POST",
+    url: "/login",
+    handler: ValidateUser
 }
 
-const showMessageOpts = {
-    method: "GET",
-    url: "/home",
-    preHandler: fastify.authenticate,
-    handler: showMessage
+const developerOpts = {
+    method: 'GET',
+    url: '/developer',
+    preHandler: [fastify.authentication, checkRole(['Developer', 'Engineer'])],
+    handler: DeveloperAuthorization
+}
+
+const deleteUserOpts = {
+    method: "DELETE",
+    url: "/user/:_id",
+    handler: DeleteUser
 }
 
 const Routes = (fastify, options, done) => {
-    fastify.route(generateTokenOpts)
-    fastify.route(validateTokenOpts)
-    fastify.route(showMessageOpts)
+    fastify.route(addUserOpts)
+    fastify.route(validateUserOpts)
+    fastify.route(developerOpts)
+    fastify.route(deleteUserOpts)
 
     done()
 }
